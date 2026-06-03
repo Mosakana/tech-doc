@@ -1,11 +1,13 @@
-# tech-doc — a Claude Code skill for a Markdown / Obsidian knowledge base
+# tech-doc — a Claude Code skill that writes **Chinese-language** technical docs into a Markdown / Obsidian knowledge base
 
 Turn debugging sessions and learning into clean, **Obsidian-friendly Markdown** notes
 in a nested, graph-linked knowledge vault — and keep that vault healthy with scripts.
 
-The skill writes Chinese-language technical docs (踩坑记 / lessons-learned and 学习材料 /
-study guides) as Markdown with frontmatter, callouts, mermaid diagrams, and `[[wikilinks]]`,
-into an Obsidian vault organized by **nested domains** with auto-generated index (MOC) notes.
+> **The generated documents are written in Chinese.** The skill produces two doc types —
+> lessons-learned (debugging post-mortems) and study guides (system deep-dives) — as Markdown
+> with frontmatter, callouts, mermaid diagrams, and `[[wikilinks]]`, into an Obsidian vault
+> organized by **nested domains** with auto-generated index (MOC) notes.
+> (This README and the skill's own guides are in English; only the output docs are Chinese.)
 
 ## What's in here
 
@@ -32,12 +34,17 @@ ln -s ~/src/tech-doc ~/.claude/skills/tech-doc
 
 ## Setup
 
-Two env vars: `KNOWLEDGE_VAULT` (your Obsidian vault root) and `SKILL_PYTHON` (a python with
-`python-docx`, only for `.docx` migration). **Set them in `~/.claude/settings.json`'s `env`** so
-Claude Code's Bash tool sees them — a plain `~/.bashrc` export is skipped by non-interactive shells:
+Three env vars: `KNOWLEDGE_VAULT` (your Obsidian vault root), `SKILL_PYTHON` (a python with
+`python-docx`, only for `.docx` migration), and `DOC_AUTHOR` (the `author:` written into each
+doc's frontmatter). **Set them in `~/.claude/settings.json`'s `env`** so Claude Code's Bash tool
+sees them — a plain `~/.bashrc` export is skipped by non-interactive shells:
 
 ```json
-"env": { "KNOWLEDGE_VAULT": "/path/to/your/vault", "SKILL_PYTHON": "python3" }
+"env": {
+  "KNOWLEDGE_VAULT": "/path/to/your/vault",
+  "SKILL_PYTHON": "python3",
+  "DOC_AUTHOR": "Your Name (you@example.com) + Claude Code"
+}
 ```
 
 > Read/Write/Edit tools take **literal** paths (no `$VAR` expansion), so the agent resolves
