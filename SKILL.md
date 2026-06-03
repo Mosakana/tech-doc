@@ -23,18 +23,29 @@ notes). **PDF is a derived artifact**, exported by hand from Obsidian when wante
 ## Setup (per machine)
 
 Two env vars configure this skill; the scripts read them and the docs reference them.
-Set them once in your shell profile (`~/.bashrc` / `~/.zshrc`):
 
-```bash
-export KNOWLEDGE_VAULT="$HOME/Knowledge"     # your Obsidian vault root (e.g. /mnt/d/Knowledge on WSL)
-export SKILL_PYTHON="python3"                # a python with python-docx (only for .docx migration)
+- **`KNOWLEDGE_VAULT`** — the Obsidian vault root (e.g. `/mnt/d/Knowledge` on WSL).
+  Scripts default to `$KNOWLEDGE_VAULT`, then `~/Knowledge`.
+- **`SKILL_PYTHON`** — a python with `python-docx` (only for the `.docx` migration helper;
+  `pip install python-docx`). The index/link checkers run under plain `python3`.
+
+**Set them where the agent's Bash tool will see them — that means `settings.json`'s `env`,
+NOT just `~/.bashrc`** (a non-interactive shell hits `~/.bashrc`'s "if not interactive, return"
+guard and never reaches the exports, so the vars come up empty). In `~/.claude/settings.json`:
+
+```json
+"env": { "KNOWLEDGE_VAULT": "/mnt/d/Knowledge", "SKILL_PYTHON": "/path/to/python" }
 ```
 
-- **`KNOWLEDGE_VAULT`** — where all docs live. Scripts default to `$KNOWLEDGE_VAULT`, then `~/Knowledge`.
-  When this guide writes `$KNOWLEDGE_VAULT/...`, resolve it (the agent can `echo "$KNOWLEDGE_VAULT"` once).
-- **`SKILL_PYTHON`** — only needed for the legacy `.docx` migration helper (`docx_extract.py` needs
-  `python-docx`: `pip install python-docx`). The index/link checkers run under plain `python3`.
-- **Author** — generated docs' frontmatter `author:` should be the user's own name/email (the templates
+> [!IMPORTANT] How the agent must handle these vars (read before acting)
+> - **Resolve once, up front:** run `echo "$KNOWLEDGE_VAULT"` and use the **concrete** result
+>   (e.g. `/mnt/d/Knowledge`) for the rest of the task.
+> - **Bash expands `$VARS`; Read / Write / Edit do NOT.** Those tools take a literal path — if you
+>   pass `$KNOWLEDGE_VAULT/llm/foo.md` to Write you'll create a folder literally named
+>   `$KNOWLEDGE_VAULT`. So in Read/Write/Edit always use the **resolved** path
+>   (`/mnt/d/Knowledge/llm/foo.md`). In Bash you can use `$KNOWLEDGE_VAULT` directly.
+
+- **Author** — generated docs' frontmatter `author:` should be the user's own name/email (templates
   show a `<Your Name>` placeholder). The agent uses the actual user identity from context.
 
 ## Workflow

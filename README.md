@@ -32,12 +32,16 @@ ln -s ~/src/tech-doc ~/.claude/skills/tech-doc
 
 ## Setup
 
-Set two env vars in your shell profile:
+Two env vars: `KNOWLEDGE_VAULT` (your Obsidian vault root) and `SKILL_PYTHON` (a python with
+`python-docx`, only for `.docx` migration). **Set them in `~/.claude/settings.json`'s `env`** so
+Claude Code's Bash tool sees them — a plain `~/.bashrc` export is skipped by non-interactive shells:
 
-```bash
-export KNOWLEDGE_VAULT="$HOME/Knowledge"   # your Obsidian vault root
-export SKILL_PYTHON="python3"              # a python with python-docx (only for .docx migration)
+```json
+"env": { "KNOWLEDGE_VAULT": "/path/to/your/vault", "SKILL_PYTHON": "python3" }
 ```
+
+> Read/Write/Edit tools take **literal** paths (no `$VAR` expansion), so the agent resolves
+> `$KNOWLEDGE_VAULT` to a concrete path before using those tools — see `SKILL.md` § Setup.
 
 Optional dep for `.docx` migration: `pip install python-docx`.
 
