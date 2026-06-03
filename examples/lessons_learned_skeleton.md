@@ -2,7 +2,7 @@
 title: <项目名> <场景>踩坑记
 subtitle: <一句副标题:具体踩了什么坑、最后怎么解的>
 date: <YYYY-MM-DD — 今天的真实日期,问系统别用训练数据>
-author: <Your Name> (you@example.com) + Claude Code
+author: $DOC_AUTHOR
 status: stable
 type: lessons-learned
 audience: <谁该看这篇,一句话>

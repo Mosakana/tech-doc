@@ -2,7 +2,7 @@
 title: <主题>详解
 subtitle: <副标题:从"为什么选这套"到"每个模块在做什么">
 date: <YYYY-MM-DD — 今天的真实日期,问系统别用训练数据>
-author: <Your Name> (you@example.com) + Claude Code
+author: $DOC_AUTHOR
 status: stable
 type: study-guide
 audience: <谁该看这篇,一句话>

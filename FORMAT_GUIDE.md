@@ -35,7 +35,7 @@ PDF 是需要时用 Obsidian(File → Export to PDF)手动导出的最终分享�
 title: 合规审查与 LLM / RAG 结合的系统设计
 subtitle: 一句副标题,具体讲了什么
 date: 2026-06-02                 # 今天的真实日期(问系统,别用训练数据)
-author: <Your Name> (you@example.com) + Claude Code
+author: $DOC_AUTHOR              # 解析自环境变量(本机 settings.json),如 "Your Name (...) + Claude Code"
 status: stable                   # draft | stable | superseded
 type: lessons-learned            # lessons-learned | study-guide | research | note
 audience: 谁该看这篇,一句话

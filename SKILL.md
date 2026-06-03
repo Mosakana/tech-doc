@@ -28,25 +28,31 @@ Two env vars configure this skill; the scripts read them and the docs reference 
   Scripts default to `$KNOWLEDGE_VAULT`, then `~/Knowledge`.
 - **`SKILL_PYTHON`** — a python with `python-docx` (only for the `.docx` migration helper;
   `pip install python-docx`). The index/link checkers run under plain `python3`.
+- **`DOC_AUTHOR`** — the `author:` string written into every generated doc's frontmatter,
+  e.g. `Your Name (you@example.com) + Claude Code`. The templates show `$DOC_AUTHOR`.
 
 **Set them where the agent's Bash tool will see them — that means `settings.json`'s `env`,
 NOT just `~/.bashrc`** (a non-interactive shell hits `~/.bashrc`'s "if not interactive, return"
 guard and never reaches the exports, so the vars come up empty). In `~/.claude/settings.json`:
 
 ```json
-"env": { "KNOWLEDGE_VAULT": "/mnt/d/Knowledge", "SKILL_PYTHON": "/path/to/python" }
+"env": {
+  "KNOWLEDGE_VAULT": "/mnt/d/Knowledge",
+  "SKILL_PYTHON": "/path/to/python",
+  "DOC_AUTHOR": "Your Name (you@example.com) + Claude Code"
+}
 ```
 
 > [!IMPORTANT] How the agent must handle these vars (read before acting)
-> - **Resolve once, up front:** run `echo "$KNOWLEDGE_VAULT"` and use the **concrete** result
->   (e.g. `/mnt/d/Knowledge`) for the rest of the task.
-> - **Bash expands `$VARS`; Read / Write / Edit do NOT.** Those tools take a literal path — if you
->   pass `$KNOWLEDGE_VAULT/llm/foo.md` to Write you'll create a folder literally named
->   `$KNOWLEDGE_VAULT`. So in Read/Write/Edit always use the **resolved** path
->   (`/mnt/d/Knowledge/llm/foo.md`). In Bash you can use `$KNOWLEDGE_VAULT` directly.
-
-- **Author** — generated docs' frontmatter `author:` should be the user's own name/email (templates
-  show a `<Your Name>` placeholder). The agent uses the actual user identity from context.
+> - **Resolve once, up front:** run `echo "$KNOWLEDGE_VAULT"` / `echo "$DOC_AUTHOR"` and use the
+>   **concrete** results for the rest of the task.
+> - **Bash expands `$VARS`; Read / Write / Edit do NOT.** Those tools take a literal path/string — if
+>   you pass `$KNOWLEDGE_VAULT/llm/foo.md` to Write you'll create a folder literally named
+>   `$KNOWLEDGE_VAULT`, and `author: $DOC_AUTHOR` would be written verbatim. So with Read/Write/Edit
+>   always use the **resolved** value (`/mnt/d/Knowledge/llm/foo.md`, `Your Name (...) + Claude Code`).
+>   In Bash you can use `$VAR` directly.
+> - **Never invent or change the author.** It comes from `$DOC_AUTHOR` only — don't substitute the
+>   `<Your Name>` placeholder or a guessed name.
 
 ## Workflow
 
