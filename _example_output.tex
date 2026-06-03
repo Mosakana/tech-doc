@@ -1,0 +1,324 @@
+\documentclass[11pt,a4paper]{ctexart}
+
+% --- Geometry ---
+\usepackage[margin=1in]{geometry}
+
+% --- Fonts (LuaLaTeX) ---
+% ctex auto-loads luatexja-fontspec on LuaLaTeX, which provides the same
+% \setCJKmainfont / \setCJKmonofont API that xeCJK does on XeLaTeX — so
+% we don't load xeCJK explicitly. (Loading both would conflict.)
+\usepackage{fontspec}
+\setmainfont{Calibri}
+\setCJKmainfont{Microsoft YaHei}
+\setmonofont{Consolas}
+% CJK in code blocks (e.g. Chinese comments) — use the same CJK family
+% so character spacing stays consistent with surrounding mono text.
+\setCJKmonofont{Microsoft YaHei}
+
+% --- Color emoji (LuaLaTeX + HarfBuzz) ---
+% Renderer=HarfBuzz is required for LuaLaTeX to read color glyph tables
+% (COLR/CPAL, sbix) — without it, emoji render as monochrome silhouettes.
+% Swap "Segoe UI Emoji" to "Apple Color Emoji" on macOS or "Noto Color
+% Emoji" on Linux if the user is compiling outside Windows.
+\newfontfamily\colorEmoji{Segoe UI Emoji}[Renderer=HarfBuzz]
+
+% --- Color ---
+\usepackage[table]{xcolor}
+\definecolor{HeadingBlue}{HTML}{1A365D}
+\definecolor{Subtitle}{HTML}{555577}
+\definecolor{Meta}{HTML}{666666}
+
+% --- Headings: dark-blue bold, custom sizes, custom spacing ---
+\usepackage{titlesec}
+\titleformat{\section}
+  {\color{HeadingBlue}\bfseries\fontsize{18}{23.400000000000002}\selectfont}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\color{HeadingBlue}\bfseries\fontsize{15}{19.5}\selectfont}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\color{HeadingBlue}\bfseries\fontsize{12.5}{16.25}\selectfont}
+  {\thesubsubsection}{1em}{}
+\titleformat{\paragraph}[hang]
+  {\color{HeadingBlue}\bfseries\fontsize{11.5}{14.950000000000001}\selectfont}
+  {}{0pt}{}
+
+\titlespacing*{\section}{0pt}{18pt}{10pt}
+\titlespacing*{\subsection}{0pt}{18pt}{10pt}
+\titlespacing*{\subsubsection}{0pt}{18pt}{10pt}
+
+% --- Body line spacing ---
+\usepackage{setspace}
+\setstretch{1.5}
+
+% --- Paragraph style: Western tech-doc convention ---
+% No first-line indent; visual paragraph break comes from \parskip.
+% (ctexart's default is Chinese-book-style 2-char first-line indent,
+% which in code-heavy tech docs reads as inconsistent — first paragraph
+% after a heading is flush-left, subsequent ones are indented.)
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+% --- Bullets (enumitem for tight list spacing) ---
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=4pt,topsep=4pt,parsep=0pt,partopsep=0pt}
+
+% --- Code blocks: GitHub-light-mode style via the `listings` package ---
+% (Currently the most common modern setup for code in LaTeX tech docs:
+% pure-LaTeX, no --shell-escape needed, optional per-language syntax
+% highlighting. For heavier syntax highlighting needs, consider switching
+% to `minted` — same look, better tokenization, but external Python deps.)
+\usepackage{listings}
+\definecolor{CodeBg}{HTML}{F6F8FA}
+\definecolor{CodeText}{HTML}{24292E}
+\definecolor{CodeKeyword}{HTML}{D73A49}
+\definecolor{CodeString}{HTML}{032F62}
+\definecolor{CodeComment}{HTML}{6A737D}
+
+% Define a few language modes that listings doesn't ship with by default
+% but show up often in tech docs.
+\lstdefinelanguage{json}{
+    morestring=[b]",
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    sensitive=true,
+    literate=
+        *{0}{{{\color{CodeString}0}}}{1}
+         {1}{{{\color{CodeString}1}}}{1}
+         {2}{{{\color{CodeString}2}}}{1}
+         {3}{{{\color{CodeString}3}}}{1}
+         {4}{{{\color{CodeString}4}}}{1}
+         {5}{{{\color{CodeString}5}}}{1}
+         {6}{{{\color{CodeString}6}}}{1}
+         {7}{{{\color{CodeString}7}}}{1}
+         {8}{{{\color{CodeString}8}}}{1}
+         {9}{{{\color{CodeString}9}}}{1},
+}
+
+\lstdefinelanguage{TypeScript}{
+    morekeywords={async, await, break, case, catch, class, const, continue,
+        debugger, default, delete, do, else, enum, export, extends, false,
+        finally, for, from, function, if, implements, import, in, instanceof,
+        interface, let, new, null, of, private, protected, public, return,
+        static, super, switch, this, throw, true, try, type, typeof, var,
+        void, while, with, yield},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    sensitive=true,
+}
+
+% Default style — plain monospace by default, color tokens when language
+% is specified.
+\lstdefinestyle{techdoc}{
+    backgroundcolor=\color{CodeBg},
+    basicstyle=\fontsize{9.5}{11.875}\ttfamily\color{CodeText},
+    keywordstyle=\color{CodeKeyword}\bfseries,
+    stringstyle=\color{CodeString},
+    commentstyle=\color{CodeComment}\itshape,
+    numberstyle=\tiny\color{CodeComment},
+    numbers=none,
+    frame=none,
+    framesep=10pt,
+    xleftmargin=14pt,
+    xrightmargin=14pt,
+    aboveskip=12pt,
+    belowskip=12pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    columns=fullflexible,
+    keepspaces=true,
+    upquote=true,
+    extendedchars=true,
+    captionpos=b,
+}
+\lstset{style=techdoc}
+
+% --- Tables ---
+\usepackage{array}      % \newcolumntype, \arraybackslash for ragged cells
+\usepackage{tabularx}
+\usepackage{booktabs}
+% xltabular = longtable + tabularx: page-breakable tables that keep the
+% auto-flex X columns and repeat the header row on each page. Without this,
+% a tabularx/tabular taller than the remaining page is a single unbreakable
+% box — it gets shoved whole onto the next page (leaving a blank gap) and
+% overflows the bottom margin if it's taller than a full page.
+\usepackage{xltabular}
+
+% Ragged-right cell variants. Plain p{} and X columns are FULLY JUSTIFIED,
+% which in narrow columns stretches the white space to fill the line: Latin
+% words spread apart ("OpenAI      text-...") and — worse with CJK — every
+% character gets pushed apart ("多 语 言 最 强"). Left-aligning the text
+% (ragged-right) removes that stretch entirely. \arraybackslash restores \\
+% as the row terminator, which the \raggedright redefinition would otherwise
+% clobber. Y = ragged flexible (replaces X); P{w} = ragged fixed-width.
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% --- Hyperlinks (TOC) ---
+\usepackage[hidelinks]{hyperref}
+
+% --- TOC heading also uses our dark-blue color ---
+\usepackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\color{HeadingBlue}\bfseries\Large}
+
+% --- Suppress page numbers on title page ---
+\usepackage{titling}
+
+% --- Images ---
+% graphicx for \includegraphics; float for [H] (here-and-nowhere-else placement);
+% adjustbox lets \includegraphics accept "max height=..." keys.
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[export]{adjustbox}
+
+% --- Long URLs / unbreakable Latin words: give LaTeX stretch budget to avoid
+%     Overfull \hbox warnings in the references section. Slight extra word
+%     spacing is preferable to ragged-right-with-overrun.
+\setlength{\emergencystretch}{3em}
+
+% --- Image placeholder for missing files (used by add_image's \IfFileExists fallback).
+%     \detokenize on the filename arg prevents underscores from triggering math mode
+%     inside the \textit{} (which would crash compile with "Missing $ inserted").
+%     \par + \vspace inside parbox is more stable than \\[em].
+\newcommand{\imgplaceholder}[2]{%
+  \fbox{\parbox{0.75\textwidth}{\centering%
+    \vspace{1.5em}%
+    {\itshape [\,image not provided:\ \texttt{\detokenize{#1}}\,]}\par%
+    \vspace{0.6em}%
+    {\small #2}%
+    \vspace{1.5em}%
+  }}%
+}
+
+\renewcommand{\contentsname}{目录}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{4cm}
+{\color{HeadingBlue}\bfseries\fontsize{28}{34}\selectfont 示例文档}\par
+\vspace{1cm}
+{\color{Subtitle}\fontsize{18}{22}\selectfont 演示 LaTeX 模板支持的所有元素}\par
+\vspace{2cm}
+{\color{Meta}\fontsize{11}{14}\selectfont 文档日期:2026 年 5 月 6 日}\par
+\vspace{0.3cm}
+{\color{Meta}\fontsize{11}{14}\selectfont 适用范围:Bota 技术文档模板}\par
+\vspace{0.3cm}
+\end{titlepage}
+
+{\setlength{\parskip}{0pt}\tableofcontents}
+
+\clearpage
+
+\clearpage
+
+\section{引言}
+
+本示例演示了模板支持的所有元素:标题、副标题、正文、\textbf{加粗}、斜体、列表、代码、表格。\par
+
+\subsection{段落与列表}
+
+这是普通正文。\par
+
+\textbf{这是整段加粗正文。}\par
+
+\textit{这是整段斜体正文。}\par
+
+\begin{itemize}
+
+\item 第一条要点
+
+\item 带 \textbf{inline 加粗} 的要点
+
+\item \textbf{要点 3:}带粗体前缀的要点,用于强调类别。
+
+\end{itemize}
+
+\clearpage
+
+\section{代码与表格}
+
+\subsection{代码块}
+
+不指定语言 — 纯等宽,适合 shell 命令、错误输出、ASCII 图等:\par
+
+\begin{lstlisting}
+aws --profile dev logs filter-log-events \
+    --log-group-name /eks/bota-api \
+    --filter-pattern "ERROR"
+\end{lstlisting}
+
+Python(关键字加粗高亮):\par
+
+\begin{lstlisting}[language=python]
+def find_or_create_user(email: str) -> User:
+    # 看 DDB 里有没有这个人
+    existing = users_table.get_item(Key={"email": email})
+    if existing.get("Item"):
+        return User.from_dict(existing["Item"])
+    return _create_new_user(email)
+\end{lstlisting}
+
+JSON(string / number / 关键字着色):\par
+
+\begin{lstlisting}[language=json]
+{
+  "user_pool_id": "us-west-2_pJr7fveBL",
+  "ttl_seconds": 3600,
+  "enabled": true
+}
+\end{lstlisting}
+
+TypeScript / JavaScript(关键字 + 字符串 + 注释):\par
+
+\begin{lstlisting}[language=TypeScript]
+// list memberships for the calling user
+const memberships = await ddb.send(
+  new QueryCommand({
+    TableName: MEMBERSHIPS_TABLE,
+    KeyConditionExpression: 'cognitoSub = :sub',
+    ExpressionAttributeValues: { ':sub': cognitoSub },
+  })
+);
+\end{lstlisting}
+
+\subsection{表格}
+
+\par\bigskip
+\noindent
+\begin{xltabular}{\textwidth}{|Y|Y|Y|}
+\hline
+\rowcolor[HTML]{1A365D} \textbf{\textcolor[HTML]{FFFFFF}{字段}} & \textbf{\textcolor[HTML]{FFFFFF}{类型}} & \textbf{\textcolor[HTML]{FFFFFF}{说明}} \\
+\hline
+\endhead
+id & string & 记录的唯一标识 \\
+\hline
+createdAt & timestamp & 创建时间(UTC) \\
+\hline
+status & enum & \textbf{pending} /\allowbreak{} processing /\allowbreak{} done \\
+\hline
+\end{xltabular}
+\bigskip
+
+\subsection{图片}
+
+图片用 add\_image 添加,缺图时自动渲染占位框(下方就是占位示范):\par
+
+\begin{figure}[H]
+\centering
+\IfFileExists{images/_does_not_exist.png}{\includegraphics[width=0.85\textwidth,keepaspectratio,max height=0.55\textheight]{images/_does_not_exist.png}}{\imgplaceholder{images/_does_not_exist.png}{caption 可以写 \textbf{inline 加粗},LaTeX 特殊字符 (\& \% \$ \# \_) 也会自动 escape。}}
+\caption{caption 可以写 \textbf{inline 加粗},LaTeX 特殊字符 (\& \% \$ \# \_) 也会自动 escape。}
+\end{figure}
+
+\clearpage
+
+\section{结语}
+
+这份模板涵盖了常见的技术文档元素。\par
+
+\end{document}
