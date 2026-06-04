@@ -89,31 +89,38 @@ related:                         # 可选,强相关的几篇,帮 graph view 连�
 
 ## 5. Callout 提示框(Obsidian 原生)
 
-这是替代 LaTeX 灰字旁注的**升级**:Obsidian 把 `> [!type]` 渲染成带颜色和图标的卡片,
-读者一眼能扫到"警告/失败发现/待办"。**用它来给关键信息分级。**
+Obsidian 把 `> [!type]` 渲染成带色卡片,给关键信息分级。**不要从官方全部类型里随意挑**——
+本库只用下面这个**固定集合**,每个 callout 绑定**一个角色**,别让 agent 自由发挥。
 
-语法:
-```markdown
-> [!warning] 可选的标题
-> 正文。可以多行,可以包含 **加粗**、`代码`、列表。
-```
+> [!warning] 先搞清楚别名(官方文档证实)
+> `[!important]`、`[!hint]` 都是 **`tip`** 的别名 —— 渲染成**同一个青绿火苗卡片**。所以
+> **绝不能同时用 `tip` 和 `important` 表达两种意思**(它们一模一样)。本库:`important` 专表"关键决策",
+> **不用** `tip`。另外:紫色卡片是 **`example`**,**不是** `important`(这点以前标错过)。
 
-常用 type(按语义选,别滥用):
+**批准集合(只用这 8 个;keyword 用官方 canonical 名):**
 
-| type | 用途 | 渲染色 |
+| keyword | 角色(何时用,一个 callout 一个用途) | 图标 · 色 |
 |---|---|---|
-| `[!note]` / `[!info]` | 补充说明、背景 | 蓝 |
-| `[!tip]` | 实用建议、技巧 | 绿 |
-| `[!important]` | 锁定决策、核心纪律 | 紫 |
-| `[!warning]` | 注意、容易踩的坑 | 黄 |
-| `[!danger]` / `[!failure]` | 致命冲突、失败发现、"别这么做" | 红 |
-| `[!quote]` | 引用原话(论文 / 官方文档 / 访谈) | 灰 |
-| `[!abstract]` / `[!summary]` | 文首一句话摘要 | 蓝绿 |
-| `[!todo]` | 待办、待验证项(可配合 `- [ ]` 复选框) | 蓝 |
+| `abstract` | 文首一句话摘要 / TL;DR(**每篇至多一个**,放最前) | 剪贴板 · 青绿 |
+| `important` | 锁定决策 / 核心纪律 / 关键结论 | 火苗 · 青绿 |
+| `warning` | 坑 / 注意事项 / 容易出错处 | 三角 · 橙 |
+| `danger` | 致命冲突 / 高危 / "绝对别这么做" | 闪电 · 红 |
+| `failure` | 失败发现 / 此路不通 / 被否决的方案 | 叉 · 红 |
+| `quote` | 引用原话(论文 / 官方文档 / 访谈) | 引号 · 灰 |
+| `todo` | 待办 / 待验证(配 `- [ ]` 复选框) | 勾圈 · 蓝 |
+| `note` | 补充旁注 / 背景 | 铅笔 · 蓝 |
 
-- **可折叠**:`> [!note]- 标题`(加 `-`)默认折叠,`+` 默认展开。长旁注用折叠。
-- **别滥用**:一篇里 callout 太多会失去"分级"意义。正文能说清的就用正文。
-  reserve 给:核心纪律(important)、坑(warning/danger)、原话(quote)、待办(todo)。
+> [!note] 其余官方类型本库不用
+> `info`/`tip`/`success`/`question`/`bug`/`example`/`summary`/`tldr`/`check`/`done`/`caution`/`error`…
+> —— 一律不用(避免选择困难和语义重叠)。**真要"示例"卡片**时,才破例用 `example`(紫)。
+
+**语法 + 硬规则:**
+- `> [!warning] 可选标题` 换行 `> 正文`(可多行,含加粗 / 代码 / 列表 / 表格)。
+- 折叠:`> [!note]- 标题`(加 `-`)默认折叠,`+` 默认展开;长旁注用折叠。
+- **一个用途一个 keyword**:`danger`(高危/别做)和 `failure`(此路不通)别混用;按上表语义选。
+- **callout 标题里不加 emoji** —— callout 自带图标了(§10)。
+- **别滥用**:callout 是分级工具,一篇堆太多就没了重点;正文能说清就用正文。reserve 给决策 / 坑 / 原话 / 待办。
+- **自查**:`grep -roP '\[!\K[a-z]+' <vault> | sort -u` 列出全库用过的 callout 类型,核对是否都在批准集合内。
 
 ---
 
@@ -276,7 +283,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/check_links.py
 - [ ] **frontmatter 完整**:title / date(今天真实日期)/ author / type / audience / tags(≥2-3)
 - [ ] 标题用 `#` 层级,**没有手写"一、""1.1"章节号**
 - [ ] 文档内引用用 `[[#锚点]]`,没有硬写"见第 3 节"
-- [ ] 关键信息用了 **callout** 分级(important/warning/danger/quote),但没滥用
+- [ ] callout **只用 § 5 批准集合的 8 个**(abstract/important/warning/danger/failure/quote/todo/note),一个用途一个 keyword、没滥用、标题不带 emoji
 - [ ] 流程/架构图用 **mermaid**,不是 ASCII 线框;配色对齐主题色
 - [ ] 代码块**标了语言**(日志/prompt/树形除外),长度克制(<25 行)
 - [ ] 双链按 § 9 协议:`related` 是强相关 peer 且**互链**、不含 reference;reference/引用走正文 `[[ ]]`
