@@ -52,7 +52,7 @@ def build(d, parent_index, vault):
     )
 
     L = ["---", f"title: {base} — 索引", "type: moc", "tags:", "  - moc", "---", "",
-         f"# {base}", "", f"> 上级:[[{parent_index}]]", "", GEN_MARK, ""]
+         f"# {base}", "", f"> 上级：[[{parent_index}]]", "", GEN_MARK, ""]
     if subs:
         L += ["## 子域", ""]
         L += [f"- [[{s}]]" for s in subs]

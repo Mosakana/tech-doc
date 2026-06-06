@@ -89,6 +89,11 @@ related:                         # 可选,强相关的几篇,帮 graph view 连�
   照着写;别学某些被硬折行污染过的旧文档。自查/批量修复:
   `python3 ${CLAUDE_SKILL_DIR}/scripts/reflow.py --check`(列出硬折行文档)、
   `reflow.py <file>`(就地合并,带结构安全校验)。
+- **中文正文用全角标点**:中文句子里的逗号/句号/冒号/分号/感叹号/问号/括号,写成全角
+  `，。：；！？（）`(全角自带间距,半角会让中文显得很密)。**例外**(保持半角原样):代码块、
+  行内代码 `` `…` ``、英文/数字/URL、小数与版本号(`0.8.0`)、`[[wikilink]]`、`[!callout]` 语法、
+  以及**标题行**(标题转了会和 `[[#锚点]]` 对不上)。括号成对:中文里包英文/代码时两端都用全角
+  `（vector）`。自查/批量修复:`fullwidth.py --check` / `fullwidth.py <file>`(只转挨着中文的半角标点,带安全校验)。
 - **避免**:感叹号、营销语言、对没在源文件里核实过的事下肯定结论。
 
 ---
@@ -291,6 +296,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/check_links.py
 - [ ] 文档内引用用 `[[#锚点]]`,没有硬写"见第 3 节"
 - [ ] callout **只用 § 5 批准集合的 8 个**(abstract/important/warning/danger/failure/quote/todo/note),一个用途一个 keyword、没滥用、标题不带 emoji
 - [ ] **一段一行**,正文段落没有硬折行(`reflow.py --check` 为空)
+- [ ] **中文标点全角**:正文中文标点是全角 `，。：；！？（）`(代码/英文/数字/标题除外;`fullwidth.py --check` 为空)
 - [ ] 流程/架构图用 **mermaid**,不是 ASCII 线框;配色对齐主题色
 - [ ] 代码块**标了语言**(日志/prompt/树形除外),长度克制(<25 行)
 - [ ] 双链按 § 9 协议:`related` 是强相关 peer 且**互链**、不含 reference;reference/引用走正文 `[[ ]]`
