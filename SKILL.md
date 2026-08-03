@@ -203,9 +203,13 @@ designed to cost ~0 tokens on unchanged docs:
 - Refresh one: `bash ${CLAUDE_SKILL_DIR}/scripts/refresh_reference.sh <reference/...md>`
   → preserves curated frontmatter, swaps in the latest source body, bumps
   `snapshot_date` + `source_sha256`.
-- After refreshing, run the link scan; only re-apply rule-7 internal-link fixes if the
-  changed doc's new body introduced relative links — that's the only token cost, and
-  only for docs that actually changed.
+- After refreshing, **always re-apply rule 7** and then run the link scan. Refresh keeps
+  only the frontmatter and replaces the body wholesale, so every relative-link fix made
+  on a previous pass is reverted — including links the source always had, not just newly
+  introduced ones. Do not skip this because the source change "looks unrelated to links".
+  Scan rather than guess:
+  `grep -rlP '\]\((?!https?://)[^)]+\.md[^)]*\)' $KNOWLEDGE_VAULT/reference/`
+  (empty output = clean). This is the only token cost, and only for docs that changed.
 
 ### 6. Report back
 
