@@ -151,7 +151,7 @@ flowchart TD
 - **节点文字带换行**用 `<br/>`;**整段加粗**用 `<b>...</b>`(mermaid 节点里 markdown `**` 不生效)。
 - **判断分支**用 `{菱形}`,边上标条件 `-- "通过" -->`。
 - **并行汇合**(如 dense / sparse 两路 → RRF)直接画两条边指向同一节点,比 ASCII 的 `├─┐` 自然。
-- **分组**用 `subgraph ... end`(如把编排器的多个 stage 框成一块)。
+- **分组**用 `subgraph ... end`(如把编排器的多个 stage 框成一块)。**标题写法有硬规则,见 § 6.1 —— 写错会压字。**
 - **配色**用 `classDef` 对齐文档主题色(深蓝 `#1A365D` 作强调):
   ```
   classDef hot fill:#1A365D,color:#fff,stroke:#1A365D;
@@ -159,6 +159,56 @@ flowchart TD
   ```
 - 哪些**该**画 mermaid:流程 / 管线 / 架构 / 时序 / 决策树。
   哪些**不该**:纯代码、prompt 模板、配置 —— 那些是 ` ```语言 ` 代码块(§8),不是图。
+
+### 6.1 换行规范:节点安全,subgraph 标题会压字
+
+mermaid 对「文字放不下」有两种完全不同的处理,**必须分开对待**。
+
+| 位置 | 自动换行 | 盒子会不会长高 | 结论 |
+|---|---|---|---|
+| **节点标签** `A["..."]` | 会(按 `wrappingWidth`,默认 200px) | ✅ **会** | **安全**。`<br/>` 只用于控制断点、让语义分组更清楚 |
+| **subgraph 标题** `subgraph X["..."]` | 会(200px,**且改不掉**) | ❌ **不会** | **危险**。标题一换行就被里面的节点盖住 |
+
+> [!danger] subgraph 标题只预留一行高度 —— 这是 mermaid 的已知缺陷
+> 标题超过约 200px(中文约 12–14 字)会自动折成两行,但盒子**不会**为第二行留空间,于是第二行被子节点直接覆盖。
+> 更糟的是 **`wrappingWidth` 对 subgraph 无效**——它只管普通节点,所以「把换行宽度调大来避开」这条路是堵死的。
+> 参考:[mermaid#3806](https://github.com/mermaid-js/mermaid/issues/3806)(多行标题被节点覆盖)、
+> [mermaid#6110](https://github.com/mermaid-js/mermaid/issues/6110)(subgraph 忽略 wrappingWidth)、
+> [mermaid#7264](https://github.com/mermaid-js/mermaid/issues/7264)(加了 margin 仍可能压字)。
+
+**两条可选写法,按标题长度选:**
+
+**① 标题短(≤ 约 12 个中文字)—— 什么都不用做**
+
+```
+subgraph P1["阶段 1 · 模型纠偏"]
+```
+
+把放不下的信息挪走:工期挪到**边标签**(`A -->|"1–2 周"| B`),限定语挪到正文或子节点。**优先用这条**——不引入 init 指令,最省心。
+
+**② 标题必须长 —— 显式 `<br/>` + 显式预留高度**
+
+既然一定会换行,就**别让 mermaid 自己决定断在哪**:用 `<br/>` 指定断点(确定是两行),再用 `subGraphTitleMargin` 按两行预留空间。两边都是确定值,绕开自动测量。
+
+````
+```mermaid
+%%{init: {'flowchart': {'subGraphTitleMargin': {'top': 6, 'bottom': 28}}}}%%
+flowchart TD
+    subgraph P1["阶段 1(1–2 周)<br/>模型纠偏,仍在 bota/api 内"]
+        direction TB
+        A1["拆 artifacts / releases 两层"]
+    end
+```
+````
+
+- `bottom` 按行数给:**两行 ≈ 28**,三行再往上加(≈ 40)。压字就先加大这个值。
+- init 指令写在 ` ```mermaid ` 之后、`flowchart` 之前,**每张图各写一次**(不会全局生效)。
+- 该配置需 mermaid ≥ 10.3。Obsidian 近版本都满足;若被忽略则退回写法 ①。
+
+> [!warning] 写完必须实际渲染看一眼
+> 压字是**渲染期**问题,linter 和 `check_links.py` 都查不出来。含 subgraph 的图,在 Obsidian 里打开确认标题没被盖住再收工。
+
+**边标签 / 时序图**不受此限(它们有自己的盒子),按可读性决定要不要 `<br/>` 即可。
 
 > [!note] PDF 导出
 > 需要 PDF 时,直接用 **Obsidian 的 File → Export to PDF** —— 它原生渲染 mermaid、callout、
@@ -298,6 +348,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/check_links.py
 - [ ] **一段一行**,正文段落没有硬折行(`reflow.py --check` 为空)
 - [ ] **中文标点全角**:正文中文标点是全角 `，。：；！？（）`(代码/英文/数字/标题除外;`fullwidth.py --check` 为空)
 - [ ] 流程/架构图用 **mermaid**,不是 ASCII 线框;配色对齐主题色
+- [ ] **subgraph 标题**要么短到一行(§6.1 写法 ①),要么显式 `<br/>` + `subGraphTitleMargin`(写法 ②);**含 subgraph 的图已在 Obsidian 里渲染确认没压字**
 - [ ] 代码块**标了语言**(日志/prompt/树形除外),长度克制(<25 行)
 - [ ] 双链按 § 9 协议:`related` 是强相关 peer 且**互链**、不含 reference;reference/引用走正文 `[[ ]]`
 - [ ] 已跑 `build_indexes.py`(域索引更新)+ `check_links.py`(BROKEN/ASYM/BADTGT 清零)
