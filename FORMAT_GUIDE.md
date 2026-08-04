@@ -148,7 +148,7 @@ flowchart TD
 ```
 
 实用约定:
-- **节点文字带换行**用 `<br/>`;**整段加粗**用 `<b>...</b>`(mermaid 节点里 markdown `**` 不生效)。
+- **换行**用 `<br/>`;**加粗**用 `<b>...</b>`,但**两者适用范围不同,见 § 6.2**(markdown `**` 在 mermaid 里一律不生效)。
 - **判断分支**用 `{菱形}`,边上标条件 `-- "通过" -->`。
 - **并行汇合**(如 dense / sparse 两路 → RRF)直接画两条边指向同一节点,比 ASCII 的 `├─┐` 自然。
 - **分组**用 `subgraph ... end`(如把编排器的多个 stage 框成一块)。**标题写法有硬规则,见 § 6.1 —— 写错会压字。**
@@ -209,6 +209,40 @@ flowchart TD
 > 压字是**渲染期**问题,linter 和 `check_links.py` 都查不出来。含 subgraph 的图,在 Obsidian 里打开确认标题没被盖住再收工。
 
 **边标签 / 时序图**不受此限(它们有自己的盒子),按可读性决定要不要 `<br/>` 即可。
+
+### 6.2 `<br/>` 与 `<b>` 不是一类东西
+
+看起来都是 HTML 标签,实际走的是**完全不同的两条路**——这是踩过的坑,不是理论。
+
+| 标记 | mermaid 怎么处理它 | 能用在哪 |
+|---|---|---|
+| `<br/>` | **被特判的一个字符串**——渲染前手动切成多个 `tspan`,不经过 HTML 解析 | 几乎所有图类型 ✅ |
+| `<b>…</b>` | **需要真正的 HTML 渲染**(`<foreignObject>` 嵌一块 HTML 交给浏览器排版) | **只有 flowchart 节点标签** ⚠️ |
+| markdown `**` | 不处理 | 哪儿都不行 ❌ |
+
+**根因:mermaid 不是一个渲染器,是十几个。** 每种图表类型有独立的渲染代码,文字排版策略也不同:flowchart 用 `foreignObject`(HTML 全套白送),sequenceDiagram 用原生 SVG `<text>`/`<tspan>`(**完全不解析 HTML**,标签变成字面字符)。官方 issue 直接把这称为 inconsistency:
+[#611](https://github.com/mermaid-js/mermaid/issues/611)(HTML label 渲染不一致)、
+[#1844](https://github.com/mermaid-js/mermaid/issues/1844)(时序图里没法加粗)。
+
+> [!danger] 时序图 / 状态图里不要写 `<b>` —— 会原样显示成 `<b>文字</b>`
+> 要强调就换表达方式:用「」引号、破折号,或者干脆重写句子。**不要用任何 HTML 标签**。
+> ```
+> ✅ Note over D,B: 密钥「本身」过网
+> ❌ Note over D,B: 密钥<b>本身</b>过网
+> ```
+
+> [!warning] 这甚至不是图表类型的稳定属性
+> `htmlLabels` 是**配置开关**——设成 `false` 后 flowchart 也改用 SVG text,`<b>` 同样失效。
+> `securityLevel: 'strict'`(嵌入式场景常见默认)还会**清洗 HTML**。所以「能不能用 HTML」取决于
+> **图表类型 × 宿主配置**两个维度,Obsidian / GitHub / GitLab 的行为可能都不一样。
+> **只把 `<b>` 用在 flowchart 节点里,是唯一稳的选择。**
+
+> [!note] 自查
+> ```bash
+> # 列出写在非 flowchart 图里的 <b>(需人工确认所在图类型)
+> grep -n '<b>' <vault>/**/*.md
+> ```
+> 和 § 6.1 的压字一样,**这是渲染期问题,linter 查不出来**——含 `<b>` 的图必须在 Obsidian 里看一眼。
 
 > [!note] PDF 导出
 > 需要 PDF 时,直接用 **Obsidian 的 File → Export to PDF** —— 它原生渲染 mermaid、callout、
@@ -349,6 +383,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/check_links.py
 - [ ] **中文标点全角**:正文中文标点是全角 `，。：；！？（）`(代码/英文/数字/标题除外;`fullwidth.py --check` 为空)
 - [ ] 流程/架构图用 **mermaid**,不是 ASCII 线框;配色对齐主题色
 - [ ] **subgraph 标题**要么短到一行(§6.1 写法 ①),要么显式 `<br/>` + `subGraphTitleMargin`(写法 ②);**含 subgraph 的图已在 Obsidian 里渲染确认没压字**
+- [ ] **`<b>` 只出现在 flowchart 节点标签里**(§6.2);时序图 / 状态图用「」或标点强调,不用 HTML 标签
 - [ ] 代码块**标了语言**(日志/prompt/树形除外),长度克制(<25 行)
 - [ ] 双链按 § 9 协议:`related` 是强相关 peer 且**互链**、不含 reference;reference/引用走正文 `[[ ]]`
 - [ ] 已跑 `build_indexes.py`(域索引更新)+ `check_links.py`(BROKEN/ASYM/BADTGT 清零)
